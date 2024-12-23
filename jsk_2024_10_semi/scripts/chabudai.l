@@ -29,20 +29,46 @@
 
 (defun callback (msg)
     (format t "robot_mood: ~A~%" (send msg :data))
-    (when (< (send msg :data) 2)
+    (when (< (send msg :data) 4)
         (setq *chabudai* t)
     )
 )
 
-(defun chabudai_gaeshi ()
+(defun chabudai-gaeshi ()
+    (send *cube* :put :left-coords
+      (make-cascoords
+       :coords (send (send *cube* :copy-worldcoords) :translate (float-vector 700 0 300))
+       :parent *cube*)
+    )
+
+    (send *pr2* :larm :inverse-kinematics
+      (send (send *cube* :get :left-coords) :copy-worldcoords)
+      :rotation-axis :z
+    )
+
+    (send *pr2* :reset-pose)
+    (send *pr2* :larm :collar-y :joint-angle 100)
+    (send *pr2* :rarm :collar-y :joint-angle -100)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+    (send *irtviewer* :draw-objects)
+
     (send *pr2* :larm :shoulder-p :joint-angle 70)
+    (send *pr2* :larm :elbow-p :joint-angle -50)
+    (send *pr2* :rarm :shoulder-p :joint-angle 70)
+    (send *pr2* :rarm :elbow-p :joint-angle -50)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+    (send *irtviewer* :draw-objects)
+
+    ; (send *pr2* :larm :shoulder-p :joint-angle 70)
     (send *pr2* :larm :shoulder-r :joint-angle 60)
     (send *pr2* :larm :collar-y :joint-angle 32)
     (send *pr2* :larm :elbow-p :joint-angle -110)
     (send *pr2* :larm :elbow-r :joint-angle 180)
     (send *pr2* :larm :wrist-p :joint-angle -30)
     (send *pr2* :larm :wrist-r :joint-angle -30)
-    (send *pr2* :rarm :shoulder-p :joint-angle 70)
+    ; (send *pr2* :rarm :shoulder-p :joint-angle 70)
     (send *pr2* :rarm :shoulder-r :joint-angle -60)
     (send *pr2* :rarm :collar-y :joint-angle -32)
     (send *pr2* :rarm :elbow-p :joint-angle -110)
@@ -51,13 +77,9 @@
     (send *pr2* :rarm :wrist-r :joint-angle 30)
     (send *pr2* :head :neck-p :joint-angle 50)
     (send *ri* :stop-grasp :arms)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
     (send *irtviewer* :draw-objects)
-
-    ;; sleep 1秒
-    (unix:sleep 1)
-
 
     (send *pr2*
         :inverse-kinematics (send (send (send *cube* :get :left-coords) :copy-worldcoords)
@@ -75,9 +97,6 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
     (send *ri* :wait-interpolation)
     (send *irtviewer* :draw-objects)
-
-    ;; sleep 1秒
-    (unix:sleep 1)
 
     (send *pr2*
         :inverse-kinematics (send (send (send *cube* :get :left-coords) :copy-worldcoords)
